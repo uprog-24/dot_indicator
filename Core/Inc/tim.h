@@ -32,8 +32,10 @@ extern "C" {
 #include <stdbool.h>
 /* USER CODE END Includes */
 
+/// Structure of TIM2 for PWM
 extern TIM_HandleTypeDef htim2;
 
+/// Structure of TIM3 for Delays
 extern TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN Private defines */
@@ -46,12 +48,28 @@ void MX_TIM3_Init(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* USER CODE BEGIN Prototypes */
-void TIM3_Delay_ms(uint16_t delay);
-void TIM3_Delay_us(uint16_t delay);
-//void TIM2_StartPWM(int16_t frequency);
-//void TIM2_StopPWM();
 
+/**
+ * @brief  Set delay in milliseconds.
+ * @param  delay Number between 1..65535
+ * @retval None
+ */
+void TIM3_Delay_ms(uint16_t delay);
+
+/**
+ * @brief  Set delay in microseconds.
+ * @param  delay Number between 1..65535
+ * @retval None
+ */
+void TIM3_Delay_us(uint16_t delay);
+
+/**
+ * @brief  Set frequency for sound of buzzer (turning on).
+ * @param  frequency Number between 1..65535
+ * @retval None
+ */
 void TIM2_PWM_Frequency(int16_t frequency);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

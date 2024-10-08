@@ -1,122 +1,94 @@
+/**
+ * @file font.c
+ */
 #include "font.h"
 #include "tim.h"
 #include "dot.h"
 
-#define FONT_WIDTH 4U
-#define FONT_HEIGHT 8U
-#define MAX_CHARS_ON_SCREEN 2U
-#define SCREEN_WIDTH (MAX_CHARS_ON_SCREEN * FONT_WIDTH)
-#define SCREEN_HEIGHT FONT_HEIGHT
-#define EMPTY_SYMBOL_IDX 10U
+#include <string.h>
+#include <stdio.h>
 
-uint8_t symbols[][8] = {
-		{ // 0
-				0b00000000,
-				0b01110000,
-				0b01010000,
-				0b01010000,
-				0b01010000,
-				0b01010000,
-				0b01110000,
-				0b00000000
-		},
+#define FONT_WIDTH 4U ///< Width of font.
+#define FONT_HEIGHT 8U ///< Height of font.
+#define MAX_CHARS_ON_SCREEN 2U ///< Limit number chars on screen.
+#define SCREEN_WIDTH (MAX_CHARS_ON_SCREEN * FONT_WIDTH) ///< Width of screen.
+#define SCREEN_HEIGHT FONT_HEIGHT ///< Height of screen.
+#define EMPTY_SYMBOL_IDX 10U ///< Index of Clear symbol.
 
-		{ // 1
-				0b00000000,
-				0b00100000,
-				0b01100000,
-				0b00100000,
-				0b00100000,
-				0b00100000,
-				0b01110000,
-				0b00000000
-		},
-		{ // 2
-				0b00000000,
-				0b00110000,
-				0b01010000,
-				0b00010000,
-				0b00100000,
-				0b01000000,
-				0b01110000,
-				0b00000000
-		},
+#define SYMBOL_OFFSET 8 ///< Offset for symbol.
+#define ADD_FONT_OFFSET 2U ///< Width of font.
+#define BINARY_SYMBOL_SIZE 8 ///< 8 bit massive for binary representation of symbol.
 
-		{
-		// O
-				0b00000000,
-				0b00110000,
-				0b01001000,
-				0b01001000,
-				0b01001000,
-				0b01001000,
-				0b00110000,
-				0b00000000
+/**
+ * Stores the parameters of the symbol: symbol and binary_symbol massive
+ */
+typedef struct {
+	char symbol;
+	uint8_t binary_symbol[8];
+} symbol_t;
 
-		}, { // K
-						0b00000000,
-						0b01001000,
-						0b01010000,
-						0b01100000,
-						0b01100000,
-						0b01010000,
-						0b01001000,
-						0b00000000 } };
+/// Massive of symbols
+static symbol_t symbols[] = { { '0', { 0b00000000, 0b01110000, 0b01010000,
+		0b01010000, 0b01010000, 0b01010000, 0b01110000, 0b00000000 } }, { '1', {
+		0b00000000, 0b00100000, 0b01100000, 0b00100000, 0b00100000, 0b00100000,
+		0b01110000, 0b00000000 } }, { '2', { 0b00000000, 0b00110000, 0b01010000,
+		0b00010000, 0b00100000, 0b01000000, 0b01110000, 0b00000000 } }, { 'O', {
 
-int8_t output[8];
+0b00000000, 0b00110000, 0b01001000, 0b01001000, 0b01001000, 0b01001000,
+		0b00110000, 0b00000000
 
-char screen_array[SCREEN_HEIGHT][SCREEN_WIDTH];
-int8_t digits[MAX_CHARS_ON_SCREEN] = { EMPTY_SYMBOL_IDX, };
-int8_t input_number = 0;
-int8_t number_of_digits = 0;
+} }, { 'K', { 0b00000000, 0b01001000, 0b01010000, 0b01100000, 0b01100000,
+		0b01010000, 0b01001000, 0b00000000 } }
 
-void clear_digits_mas() {
-	for (int i = 0; i < MAX_CHARS_ON_SCREEN; i++) {
-		digits[i] = EMPTY_SYMBOL_IDX;
-	}
-}
+};
 
-int get_number_len(int *num) {
-	if (*num > 9 && *num < 100) {
-		return 2;
-	} else if (*num < 10 && *num > -1) {
-		return 1;
-	} else
-		return -1;
-}
-
-void split_number_by_digits(int number, int number_of_digits) {
-
-	clear_digits_mas();
-
-	switch (number_of_digits) {
-	case 2:
-		digits[1] = number / 10;
-		break;
-	case 3:
-		digits[0] = number / 100;
-		digits[1] = (number - 100 * digits[0]) / 10;
-		break;
-	}
-	digits[2] = number % 10;
-}
-
-void from_10_to_2(int input, int *output) {
+/**
+ * @brief  Convert digit representation of symbol to binary.
+ * @param  number
+ * @param  *binary_mas Binary representation of the symbol
+ * @retval None
+ */
+static void convert_number_from_10_to_2(uint8_t number, uint8_t *binary_mas) {
 	int i = 7;
 	while (i != -1) {
-		output[i] = input % 2;
-		input /= 2;
+		binary_mas[i] = number % 2;
+		number /= 2;
 		i--;
 	}
 }
 
-void set_digit(int d, int pos, char *mas, int rows, int cols) {
-	uint8_t *cur_item = 0;
+/**
+ * @brief  Find binary representation of the symbol.
+ * @param  symbol
+ * @retval uint8_t* Pointer to binary_symbol
+ */
+static uint8_t* find_binary_representation(char symbol) {
+	for (uint8_t ind = 0; ind < sizeof(symbols) / sizeof(symbols[0]); ind++) {
+		if (symbols[ind].symbol == symbol) {
+			return symbols[ind].binary_symbol;
+		}
+	}
+	return NULL;
+}
 
-	cur_item = symbols[d];
+/**
+ * @brief  Set a symbol to matrix.
+ * @param  symbol
+ * @param  pos Start position (index of column) for symbol
+ * @retval None
+ */
+void set_symbol(char symbol, uint8_t pos) {
+	uint8_t *cur_item = NULL;
 
-	for (uint8_t cur_row = 0; cur_row < 8; cur_row++) {
-		for (int row = 0; row < rows; row++) {
+	cur_item = find_binary_representation(symbol);
+
+	if (cur_item == NULL) {
+		return;
+	}
+
+	for (uint8_t cur_row = 0; cur_row < ROWS; cur_row++) {
+
+		for (uint8_t row = 0; row < ROWS; row++) {
 			if (row == cur_row) {
 				set_row_state(cur_row, TURN_ON);
 			} else {
@@ -124,15 +96,15 @@ void set_digit(int d, int pos, char *mas, int rows, int cols) {
 			}
 		}
 
-		int output[8];
-		int num_bit = 0;
+		uint8_t binary_number[8];
+		uint8_t num_bit = 0;
 
-		from_10_to_2(cur_item[cur_row], output);
+		convert_number_from_10_to_2(cur_item[cur_row], binary_number);
 
-		int start_col = pos; //* 8;
-		int end_col = start_col + 5;
-		for (int col = start_col; col < end_col; col++) {
-			if (output[num_bit] == 1) {
+		uint8_t start_col = pos;
+		uint8_t end_col = start_col + FONT_WIDTH + ADD_FONT_OFFSET;
+		for (uint8_t col = start_col; col < end_col; col++) {
+			if (binary_number[num_bit] == 1) {
 				set_col_state(col, TURN_ON);
 			} else {
 				set_col_state(col, TURN_OFF);
@@ -145,31 +117,20 @@ void set_digit(int d, int pos, char *mas, int rows, int cols) {
 
 }
 
-void init_screen() {
-	memset((void*) screen_array, '-',
-	SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(char));
-}
+/**
+ * @brief  Set symbols to matrix.
+ * @param  *str_symbols String to be set on matrix
+ * @retval None
+ */
+void set_symbols_to_matrix(char *str_symbols) {
+	uint8_t cur_pos = 1;
 
-void set_symbols_to_screen() {
-//	init_screen();
-
-//	for (int digit = 0; digit < MAX_CHARS_ON_SCREEN; digit++) {
-//		set_digit(digits[digit], digit, &(screen_array[0][0]),
-//		SCREEN_HEIGHT, SCREEN_WIDTH);
-//	}
-
-	set_digit(3, 1, &(screen_array[0][0]), 8, 8);
-	set_digit(4, 9, &(screen_array[0][0]), 8, 8);
-}
-
-void print_number_to_screen(int *number) {
-	split_number_by_digits(*number, get_number_len(number));
-	set_digits_to_screen();
-
-	for (int i = 0; i < SCREEN_HEIGHT; i++) {
-		for (int k = 0; k < SCREEN_WIDTH; k++) {
-			printf("%c", screen_array[i][k]);
-		}
-		printf("%c", '\n');
+	uint8_t ind = 0;
+	while (ind < MAX_CHARS_ON_SCREEN) {
+		set_symbol(*str_symbols, cur_pos);
+		cur_pos = cur_pos + BINARY_SYMBOL_SIZE;
+		str_symbols++;
+		ind++;
 	}
 }
+

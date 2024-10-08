@@ -32,17 +32,33 @@ extern "C" {
 #include <stdint.h>
 /* USER CODE END Includes */
 
+/// Structure CAN
 extern CAN_HandleTypeDef hcan;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
+/** Init CAN. */
 void MX_CAN_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+
+/**
+ * @brief  Start CAN. Activate notifications for interrupt callbacks
+ * @param  *hcan Pointer on CAN structure.
+ * @retval None
+ */
 void CAN_Start();
-void CAN_TxData();
+
+/**
+ * @brief  Transmit data by CAN.
+ * If transmitted data is received then set symbols to matrix.
+ * @param  stdId Standard ID of frame.
+ * @retval None
+ */
+void CAN_TxData(uint32_t stdId);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

@@ -1,17 +1,27 @@
+/**
+ * @file button.c
+ */
 #include "main.h"
 #include "button.h"
 #include "buzzer.h"
 #include "dot.h"
+#include "tim.h"
 
-#define BUZZER_ON_BUFF_SIZE 3
-#define BUZZER_OFF_BUFF_SIZE 1
 #include <stdbool.h>
 
-uint16_t buzzer_on_buff[BUZZER_ON_BUFF_SIZE] = { 3000, 4000, 0};
-uint16_t buzzer_off_buff[BUZZER_OFF_BUFF_SIZE] = { 0};
+#define BUZZER_FREQ 3000 ///< Frequency for buzzer's sound.
 
+/// Flag to control BUTTON_1 state
 volatile bool is_button_1_pressed = false;
+
+/// Flag to control BUTTON_2 state
 volatile bool is_button_2_pressed = false;
+
+/**
+  * @brief  Handle Interrupt by EXTI line, setting the state when button is pressed.
+  * @param  GPIO_Pin: Button's pins connected EXTI line
+  * @retval None
+  */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 	if (GPIO_Pin == BUTTON_1_Pin) {
@@ -24,8 +34,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 }
 
-uint8_t btn_1_counter = 1;
-uint8_t btn_2_counter = 1;
+/// Counter for pressing of BUTTON_1
+static uint8_t btn_1_counter = 1;
+
+/// Counter for pressing of BUTTON_2
+static uint8_t btn_2_counter = 1;
+
+/**
+ * @brief  Handle pressing BUTTON_1 and BUTTON_2.
+ * When BUTTON_1 is pressed 1st time - matrix is turning on,
+ * pressed 2nd time - matrix is turning off.
+ * When BUTTON_2 is pressed 1st time - buzzer is turning on,
+ * pressed 2nd time - buzzer is turning off.
+ * @param  None
+ * @retval None
+ */
 void press_button() {
 	if (is_button_1_pressed) {
 		is_button_1_pressed = false;
@@ -47,14 +70,10 @@ void press_button() {
 
 		switch (btn_2_counter) {
 		case 1:
-
-			TIM2_PWM_Frequency(3000);
-//			set_passive_buzzer_melody(buzzer_on_buff, BUZZER_ON_BUFF_SIZE);
+			TIM2_PWM_Frequency(BUZZER_FREQ);
 			break;
 		case 2:
-//			set_passive_buzzer_state(TURN_OFF);
 			TIM2_PWM_Frequency(0);
-//			set_passive_buzzer_melody(buzzer_off_buff, BUZZER_OFF_BUFF_SIZE);
 			break;
 		}
 

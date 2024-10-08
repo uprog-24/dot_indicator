@@ -41,7 +41,14 @@ extern UART_HandleTypeDef huart1;
 void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+
+/**
+ * @brief  Receiving data from UART.
+ * @param  *rx_buff Pointer to rx data buffer
+ * @retval None
+ */
 void receive_data_from_uart(char *rx_buff);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

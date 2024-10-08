@@ -23,27 +23,27 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-uint8_t uart1_rx_cnt = 0; // Receive buffer count
-char rx_byte = ' ';
+/// Receive buffer count
+static uint8_t uart1_rx_cnt = 0;
 
-volatile bool is_data_ready_to_be_read = false;
-volatile bool is_rx_full_completed = false;
+/// 1 bite received by UART
+static char rx_byte = ' ';
+
+/// Flag to control if receiving data is completed
+volatile bool is_rx_data_completed = false;
+
+/**
+ * @brief  Handle Interrupt by receiving data is completed,
+ * setting the state of the flag.
+ * @param  *huart: Structure of UART
+ * @retval None
+ */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if (huart->Instance == USART1) {
-		is_data_ready_to_be_read = true;
-		is_rx_full_completed = true;
+		is_rx_data_completed = true;
 	}
 }
 
-volatile bool is_i2c_master_tx_completed = false;
-volatile bool is_tx_full_completed = false;
-/* Регистр TXE пуст */
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
-	if (huart->Instance == USART1) {
-		is_i2c_master_tx_completed = true;
-		is_tx_full_completed = true;
-	}
-}
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
@@ -135,6 +135,12 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
+
+/**
+ * @brief  Receiving data from UART.
+ * @param  *rx_buff Pointer to rx data buffer
+ * @retval None
+ */
 void receive_data_from_uart(char *rx_buff) {
 //	char rx_byte = ' ';
 //	char cnt;
@@ -166,8 +172,8 @@ void receive_data_from_uart(char *rx_buff) {
 	while (!isDataEnd) {
 		HAL_UART_Receive_IT(&huart1, (uint8_t*) &(rx_byte), 1);
 
-		if (is_data_ready_to_be_read) {
-			is_data_ready_to_be_read = false;
+		if (is_rx_data_completed) {
+			is_rx_data_completed = false;
 
 			rx_buff[uart1_rx_cnt++] = rx_byte; // Receive byte
 

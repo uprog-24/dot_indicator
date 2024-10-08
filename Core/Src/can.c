@@ -16,31 +16,62 @@
  *
  ******************************************************************************
  */
-#include "dot.h"
-#include "font.h"
-#include <stdbool.h>
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "can.h"
 
 /* USER CODE BEGIN 0 */
+#include "dot.h"
+#include "font.h"
 
-CAN_TxHeaderTypeDef TxHeader;
-CAN_RxHeaderTypeDef RxHeader;
-uint8_t TxData[8] = { 0, };
-uint8_t RxData[8] = { 0, };
-uint32_t TxMailbox = 0;
+#include <stdbool.h>
 
-volatile bool is_rx_msg = false;
+#define CAN_DATA_SIZE 8 ///< Size of data (8 bit).
+
+/// Structure of Header for transmitting data
+static CAN_TxHeaderTypeDef tx_header;
+
+/// Structure of Header for receiving data
+static CAN_RxHeaderTypeDef rx_header;
+
+/// Buffer for transmitting data
+static uint8_t tx_data_can[8] = { 0, };
+
+/// Buffer for receiving data
+static uint8_t rx_data_can[8] = { 0, };
+
+/// MAilbox for transmitted data
+static uint32_t tx_mailbox = 0;
+
+/// String OK
+char *str_ok = "OK";
+
+/// Flag to control if data is received
+volatile bool is_data_received = false;
+
+/**
+ * @brief  Handle Interrupt by receiving data after transmitting by CAN,
+ * setting the state when data with StdId is received.
+ * @param  hcan: Structure of CAN
+ * @retval None
+ */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) == HAL_OK) {
-		if (RxHeader.StdId == 0x0378) {
-			is_rx_msg = true;
+	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rx_header, rx_data_can)
+			== HAL_OK) {
+		if (rx_header.StdId == 0x0378) {
+			is_data_received = true;
 		}
 	}
 }
 
+/// Flag to control CAN errors
 volatile uint8_t cnt = 0;
+
+/**
+ * @brief  Handle Interrupt by CAN errors.
+ * @param  hcan: Structure of CAN
+ * @retval None
+ */
 void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan) {
 	cnt = (cnt < UINT8_MAX) ? cnt + 1 : 0;
 }
@@ -48,7 +79,7 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan) {
 
 CAN_HandleTypeDef hcan;
 
-/* CAN init function */
+/* CAN init **/
 void MX_CAN_Init(void) {
 
 	/* USER CODE BEGIN CAN_Init 0 */
@@ -156,19 +187,30 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef *canHandle) {
 }
 
 /* USER CODE BEGIN 1 */
-void setFrame(uint32_t stdId) {
-	TxHeader.StdId = stdId;
-	TxHeader.ExtId = 0;
-	TxHeader.RTR = CAN_RTR_DATA; //CAN_RTR_REMOTE
-	TxHeader.IDE = CAN_ID_STD;   // CAN_ID_EXT
-	TxHeader.DLC = 8;
-	TxHeader.TransmitGlobalTime = 0;
+
+/**
+ * @brief  Setting frame for transmitting TxData by CAN.
+ * @param  stdId The standard ID of the frame.
+ * @retval None
+ */
+static void setFrame(uint32_t stdId) {
+	tx_header.StdId = stdId;
+	tx_header.ExtId = 0;
+	tx_header.RTR = CAN_RTR_DATA; //CAN_RTR_REMOTE
+	tx_header.IDE = CAN_ID_STD;   // CAN_ID_EXT
+	tx_header.DLC = 8;
+	tx_header.TransmitGlobalTime = 0;
 
 	for (uint8_t i = 0; i < 8; i++) {
-		TxData[i] = (i + 10);
+		tx_data_can[i] = (i + 10);
 	}
 }
 
+/**
+ * @brief  Start CAN. Activate notifications for interrupt callbacks
+ * @param  *hcan Pointer on CAN structure.
+ * @retval None
+ */
 void CAN_Start(CAN_HandleTypeDef *hcan) {
 	HAL_CAN_Start(hcan);
 	HAL_CAN_ActivateNotification(hcan,
@@ -176,15 +218,21 @@ void CAN_Start(CAN_HandleTypeDef *hcan) {
 					| CAN_IT_LAST_ERROR_CODE);
 }
 
+/**
+ * @brief  Transmit data by CAN.
+ * If transmitted data is received then set symbols to matrix.
+ * @param  stdId Standard ID of frame.
+ * @retval None
+ */
 void CAN_TxData(uint32_t stdId) {
 	setFrame(stdId);
 	if (HAL_CAN_GetTxMailboxesFreeLevel(&hcan) != 0) {
-		HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox);
+		HAL_CAN_AddTxMessage(&hcan, &tx_header, tx_data_can, &tx_mailbox);
 	}
 
-	if (is_rx_msg) {
-		is_rx_msg = false;
-		set_symbols_to_screen();
+	if (is_data_received) {
+		is_data_received = false;
+		set_symbols_to_matrix(str_ok);
 	}
 
 }

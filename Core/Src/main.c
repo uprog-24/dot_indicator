@@ -66,9 +66,13 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-char rx_buff[BUFF_SIZE]; // = { '\0' };
 
+/// Buffer for receiving data from UART
+char rx_data[BUFF_SIZE]; // = { '\0' };
+
+/// Buffer with frequencies for buzzer sound
 uint16_t buzzer_freq_buff[BUZZER_BUFF_SIZE] = { 3000, 4000, 0};
+
 /* USER CODE END 0 */
 
 /**

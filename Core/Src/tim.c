@@ -21,16 +21,24 @@
 #include "tim.h"
 
 /* USER CODE BEGIN 0 */
-//volatile bool is_tim16_period_elapsed = false;
-#define TIM2_FREQ 64000000
-#define TIM3_FREQ TIM2_FREQ
+#define TIM2_FREQ 64000000 ///< Frequency of APB1 for TIM2.
+#define TIM2_PERIOD 1000 ///< Period of TIM2.
+#define TIM3_FREQ TIM2_FREQ ///< Frequency of APB1 for TIM3.
+#define FREQ_FOR_MS 1000 ///< Frequency of TIM3 for Delay in ms.
+#define FREQ_FOR_US 1000000 ///< Frequency of TIM3 for Delay in us.
+#define PRESCALER_FOR_MS TIM2_FREQ/FREQ_FOR_MS -1  ///< Prescaler for TIM3 for Delay in ms. // 64000-1
+#define PRESCALER_FOR_US TIM2_FREQ/FREQ_FOR_US - 1 ///< Prescaler for TIM3 for Delay in us. // 64-1
 
+/// Flag to control if period of TIM3 is elapsed
 volatile bool is_tim3_period_elapsed = false;
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
-//	if (htim->Instance == TIM16) {
-//		is_tim16_period_elapsed = true;
-//	}
+/**
+ * @brief  Handle Interrupt by period of TIM3 is elapsed,
+ * setting the state of the flag.
+ * @param  *htim: Structure of TIM
+ * @retval None
+ */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 	if (htim->Instance == TIM3) {
 		is_tim3_period_elapsed = true;
@@ -214,10 +222,16 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *tim_baseHandle) {
 }
 
 /* USER CODE BEGIN 1 */
+
+/**
+ * @brief  Set delay in milliseconds.
+ * @param  delay Number between 1..65535
+ * @retval None
+ */
 void TIM3_Delay_ms(uint16_t delay) {
 	is_tim3_period_elapsed = false;
 
-	__HAL_TIM_SET_PRESCALER(&htim3, (64000-1));
+	__HAL_TIM_SET_PRESCALER(&htim3, PRESCALER_FOR_MS);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, delay);
 	HAL_TIM_Base_Start_IT(&htim3);
 	while (!is_tim3_period_elapsed) {
@@ -225,10 +239,15 @@ void TIM3_Delay_ms(uint16_t delay) {
 	HAL_TIM_Base_Stop_IT(&htim3);
 }
 
+/**
+ * @brief  Set delay in microseconds.
+ * @param  delay Number between 1..65535
+ * @retval None
+ */
 void TIM3_Delay_us(uint16_t delay) {
 	is_tim3_period_elapsed = false;
 
-	__HAL_TIM_SET_PRESCALER(&htim3, (64-1));
+	__HAL_TIM_SET_PRESCALER(&htim3, PRESCALER_FOR_US);
 	__HAL_TIM_SET_AUTORELOAD(&htim3, delay);
 	HAL_TIM_Base_Start_IT(&htim3);
 	while (!is_tim3_period_elapsed) {
@@ -236,15 +255,25 @@ void TIM3_Delay_us(uint16_t delay) {
 	HAL_TIM_Base_Stop_IT(&htim3);
 }
 
-// prescaler = tim_freq / (period_ARR * signal_freq)
-int16_t get_prescaler_frequency(int16_t frequency) {
+/**
+ * @brief  Get prescaler for TIM2 (PWM) by current frequency.
+ * prescaler = tim_freq / (tim_period_ARR * buzz_signal_freq)
+ * @param  frequency Number between 1..65535
+ * @retval prescaler
+ */
+int16_t TIM2_get_prescaler_frequency(int16_t frequency) {
 	if (frequency == 0)
 		return 0;
-	return ((TIM2_FREQ / (1000 * frequency)) - 1);
+	return ((TIM2_FREQ / (TIM2_PERIOD * frequency)) - 1);
 }
 
+/**
+ * @brief  Set frequency for sound of buzzer (turning on).
+ * @param  frequency Number between 1..65535
+ * @retval None
+ */
 void TIM2_PWM_Frequency(int16_t frequency) {
-	__HAL_TIM_SET_PRESCALER(&htim2, get_prescaler_frequency(frequency));
+	__HAL_TIM_SET_PRESCALER(&htim2, TIM2_get_prescaler_frequency(frequency));
 	HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 }
 
