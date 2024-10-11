@@ -32,11 +32,11 @@ extern "C" {
 #include <stdbool.h>
 /* USER CODE END Includes */
 
-/// Structure of TIM2 for PWM
 extern TIM_HandleTypeDef htim2;
 
-/// Structure of TIM3 for Delays
 extern TIM_HandleTypeDef htim3;
+
+extern TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN Private defines */
 
@@ -44,6 +44,7 @@ extern TIM_HandleTypeDef htim3;
 
 void MX_TIM2_Init(void);
 void MX_TIM3_Init(void);
+void MX_TIM4_Init(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
@@ -69,6 +70,8 @@ void TIM3_Delay_us(uint16_t delay);
  * @retval None
  */
 void TIM2_PWM_Frequency(int16_t frequency);
+
+void TIM4_Set_symbol(uint16_t time_ms, char *str_symbols);
 
 /* USER CODE END Prototypes */
 

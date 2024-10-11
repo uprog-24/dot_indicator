@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define FONT_WIDTH 4U ///< Width of font.
+#define FONT_WIDTH 5U ///< Width of font.
 #define FONT_HEIGHT 8U ///< Height of font.
 #define MAX_CHARS_ON_SCREEN 2U ///< Limit number chars on screen.
 #define SCREEN_WIDTH (MAX_CHARS_ON_SCREEN * FONT_WIDTH) ///< Width of screen.
@@ -16,7 +16,7 @@
 #define EMPTY_SYMBOL_IDX 10U ///< Index of Clear symbol.
 
 #define SYMBOL_OFFSET 8 ///< Offset for symbol.
-#define ADD_FONT_OFFSET 2U ///< Width of font.
+//#define ADD_FONT_OFFSET 2U ///< Width of font.
 #define BINARY_SYMBOL_SIZE 8 ///< 8 bit massive for binary representation of symbol.
 
 /**
@@ -28,10 +28,31 @@ typedef struct {
 } symbol_t;
 
 /// Massive of symbols
-static symbol_t symbols[] = { { '0', { 0b00000000, 0b01110000, 0b01010000,
+static symbol_t symbols[] = {
+		{'c', { // clear
+		        0b00000000,
+		        0b00000000,
+		        0b00000000,
+		        0b00000000,
+		        0b00000000,
+		        0b00000000,
+		        0b00000000,
+		        0b00000000
+		    }},
+			{'>', {0b00000000,
+					0b00100000,
+					0b01110000,
+					0b00000000,
+					0b00100000,
+					0b01110000,
+					0b00000000,
+					0b00000000}
+
+			},
+		{ '0', { 0b00000000, 0b01110000, 0b01010000,
 		0b01010000, 0b01010000, 0b01010000, 0b01110000, 0b00000000 } }, { '1', {
 		0b00000000, 0b00100000, 0b01100000, 0b00100000, 0b00100000, 0b00100000,
-		0b01110000, 0b00000000 } }, { '2', { 0b00000000, 0b00110000, 0b01010000,
+		0b01110000, 0b00000000 } }, { '2', { 0b00000000, 0b00100000, 0b01010000,
 		0b00010000, 0b00100000, 0b01000000, 0b01110000, 0b00000000 } }, { 'O', {
 
 0b00000000, 0b00110000, 0b01001000, 0b01001000, 0b01001000, 0b01001000,
@@ -77,7 +98,7 @@ static uint8_t* find_binary_representation(char symbol) {
  * @param  pos Start position (index of column) for symbol
  * @retval None
  */
-void set_symbol(char symbol, uint8_t pos) {
+void set_symbol(char symbol, uint8_t pos, uint8_t shift) {
 	uint8_t *cur_item = NULL;
 
 	cur_item = find_binary_representation(symbol);
@@ -99,10 +120,22 @@ void set_symbol(char symbol, uint8_t pos) {
 		uint8_t binary_number[8];
 		uint8_t num_bit = 0;
 
-		convert_number_from_10_to_2(cur_item[cur_row], binary_number);
+		if (cur_row+shift < 8) {
+			convert_number_from_10_to_2(cur_item[cur_row+shift], binary_number);
+		} else {
+			memset(binary_number, 0, 8);
+		}
+
+//		for (uint8_t ind = 0; ind < 8-shift; ind++) {
+//			cur_item[ind] = cur_item[ind+shift];
+//		}
+//		for (uint8_t ind = 8-shift; ind < 8; ind++) {
+//			memset(cur_item[ind], 0, 8);
+//		}
+
 
 		uint8_t start_col = pos;
-		uint8_t end_col = start_col + FONT_WIDTH + ADD_FONT_OFFSET;
+		uint8_t end_col = start_col + FONT_WIDTH; //+ ADD_FONT_OFFSET;
 		for (uint8_t col = start_col; col < end_col; col++) {
 			if (binary_number[num_bit] == 1) {
 				set_col_state(col, TURN_ON);
@@ -117,6 +150,56 @@ void set_symbol(char symbol, uint8_t pos) {
 
 }
 
+
+void set_symbol_with_shift(char start_symbol, char finish_symbol, uint8_t pos) {
+	uint8_t *start_item = NULL;
+	uint8_t *finish_item = NULL;
+
+	uint8_t shift_counter = 0;
+
+	start_item = find_binary_representation(start_symbol);
+	finish_item = find_binary_representation(finish_symbol);
+
+	if (start_item == NULL || finish_item == NULL) {
+		return;
+	}
+
+	for (uint8_t cur_row = 0; cur_row < ROWS; cur_row++) {
+
+		for (uint8_t row = 0; row < ROWS; row++) {
+			if (row == cur_row) {
+				set_row_state(cur_row, TURN_ON);
+			} else {
+				set_row_state(row, TURN_OFF);
+			}
+		}
+
+		uint8_t binary_number_start[8];
+		uint8_t binary_number_finish[8];
+		uint8_t bit_number_start = 0;
+		uint8_t bit_number_finish = 0;
+
+		convert_number_from_10_to_2(start_item[cur_row], binary_number_start);
+		convert_number_from_10_to_2(finish_item[cur_row], bit_number_finish);
+
+
+		uint8_t start_col = pos;
+		uint8_t end_col = start_col + FONT_WIDTH; //+ ADD_FONT_OFFSET;
+		for (uint8_t col = start_col; col < end_col; col++) {
+			if (binary_number_start[bit_number_start] == 1) {
+				set_col_state(col, TURN_ON);
+			} else {
+				set_col_state(col, TURN_OFF);
+			}
+			bit_number_start++;
+		}
+		TIM3_Delay_us(600);
+		set_all_cols_state(TURN_OFF);
+	}
+
+}
+
+
 /**
  * @brief  Set symbols to matrix.
  * @param  *str_symbols String to be set on matrix
@@ -127,10 +210,12 @@ void set_symbols_to_matrix(char *str_symbols) {
 
 	uint8_t ind = 0;
 	while (ind < MAX_CHARS_ON_SCREEN) {
-		set_symbol(*str_symbols, cur_pos);
+		set_symbol(*str_symbols, cur_pos, 0);
 		cur_pos = cur_pos + BINARY_SYMBOL_SIZE;
 		str_symbols++;
 		ind++;
 	}
 }
+
+
 

@@ -32,14 +32,12 @@ extern "C" {
 #include <stdint.h>
 /* USER CODE END Includes */
 
-/// Structure CAN
 extern CAN_HandleTypeDef hcan;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-/** Init CAN. */
 void MX_CAN_Init(void);
 
 /* USER CODE BEGIN Prototypes */

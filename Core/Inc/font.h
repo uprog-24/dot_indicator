@@ -15,7 +15,7 @@
  * @param  pos Start position (index of column) for symbol
  * @retval None
  */
-void set_symbol(char symbol, uint8_t pos);
+void set_symbol(char symbol, uint8_t pos, uint8_t shift);
 
 /**
  * @brief  Set symbols to matrix.
@@ -23,5 +23,7 @@ void set_symbol(char symbol, uint8_t pos);
  * @retval None
  */
 void set_symbols_to_matrix(char *str_symbols);
+
+void set_symbol_with_shift(char start_symbol, char finish_symbol, uint8_t pos);
 
 #endif /*__FONT_H__ */
