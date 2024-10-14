@@ -82,9 +82,6 @@ void TIM2_PWM_Frequency(int16_t frequency);
 void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols);
 
 
-//void demo_start_finish_floors_movement(uint8_t start_floor, uint8_t finish_floor,
-//		uint8_t *buff_stop_floors, uint8_t buff_stop_size, char direction);
-
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

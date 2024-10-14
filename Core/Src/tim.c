@@ -402,14 +402,14 @@ void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols) {
 
 			// stop floor 1..9: c1c
 			if (str_symbols[0] == 'c' && str_symbols[2] == 'c') {
-				set_symbol_on_matrix(str_symbols[1], 6, 0);
+				set_symbol_on_matrix(str_symbols[1], 7, 0);
 			} else if (str_symbols[0] == 'c') { // stop floor 10..99: c10
 				set_symbol_on_matrix(str_symbols[1], 4, 0);
 				set_symbol_on_matrix(str_symbols[2], 8, 0);
 			} else { // in moving up/down: >10 or >1c
-				set_symbol_on_matrix(str_symbols[0], 0, 0);
-				set_symbol_on_matrix(str_symbols[1], 6, 0);
-				set_symbol_on_matrix(str_symbols[2], 10, 0);
+				set_symbol_on_matrix(str_symbols[0], 1, 0);
+				set_symbol_on_matrix(str_symbols[1], 7, 0);
+				set_symbol_on_matrix(str_symbols[2], 11, 0);
 			}
 
 		}

@@ -16,7 +16,7 @@
 #define EMPTY_SYMBOL_IDX 10U ///< Index of Clear symbol.
 
 #define BINARY_SYMBOL_SIZE 8 ///< 8 bit massive for binary representation of symbol.
-#define START_BIT_INDEX_FONT 6
+#define START_BIT_INDEX_FONT 6 ///< Start index for element of symbols[]
 
 /**
  * Stores the parameters of the symbol: symbol and binary_symbol massive

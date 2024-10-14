@@ -13,10 +13,10 @@ extern void setting_symbols_floor(char *str, uint8_t current_floor,
 		char direction);
 extern void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols);
 
-#define STOP_FLOORS_BUFF_SIZE 4
-static uint8_t buff_stop_floors[STOP_FLOORS_BUFF_SIZE] = { 7, 8, 10, 11 };
+#define STOP_FLOORS_BUFF_SIZE 4 ///< Size of buff_stop_floors.
+static uint8_t buff_stop_floors[STOP_FLOORS_BUFF_SIZE] = { 7, 8, 10, 11 }; ///< Buffer with stop floors.
 
-#define DISPLAY_STR_DURING_MS 2000
+#define DISPLAY_STR_DURING_MS 2000 ///< Time during which symbols are displayed on matrix.
 
 /**
  * @brief  Movement from start to finish floor with stop floors and direction.
