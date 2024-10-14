@@ -46,6 +46,7 @@
 #define MATRIX_OFF "off"
 #define BUZZER_BUFF_SIZE 3
 
+#define DEMO_MODE 1
 #define STOP_FLOORS_BUFF_SIZE 4
 /* USER CODE END PD */
 
@@ -74,8 +75,6 @@ char rx_data[BUFF_SIZE]; // = { '\0' };
 
 /// Buffer with frequencies for buzzer sound
 uint16_t buzzer_freq_buff[BUZZER_BUFF_SIZE] = { 3000, 4000, 0 };
-
-uint8_t buff_stop_floors[STOP_FLOORS_BUFF_SIZE] = { 7, 8, 10, 11 };
 
 /* USER CODE END 0 */
 
@@ -118,6 +117,10 @@ int main(void) {
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
+#if DEMO_MODE
+
+	uint8_t buff_stop_floors[STOP_FLOORS_BUFF_SIZE] = { 7, 8, 10, 11 };
+
 	while (1) {
 
 		demo_start_finish_floors_movement(1, 14, buff_stop_floors,
@@ -129,6 +132,11 @@ int main(void) {
 
 		/* USER CODE BEGIN 3 */
 	}
+#else
+	while (1) {
+
+	}
+#endif
 	/* USER CODE END 3 */
 }
 
