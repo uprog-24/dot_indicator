@@ -427,44 +427,44 @@ void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols) {
  * @param  direction Direction of the movement: '>' - up, '<' - down, 'c' - empty symbol for stop floor.
  * @retval None
  */
-void demo_start_finish_floors_movement(uint8_t start_floor, uint8_t finish_floor,
-		uint8_t *buff_stop_floors, uint8_t buff_stop_size, char direction) {
-
-	char temp_str[3];
-	uint8_t current_floor = start_floor;
-
-	setting_symbols_floor(temp_str, start_floor, 'c');
-	TIM4_Diaplay_symbols_on_matrix(DISPLAY_STR_DURING_MS, temp_str);
-
-	while (abs(current_floor - finish_floor) > 0) {
-
-		if (buff_stop_size != 0 && buff_stop_floors != NULL) {
-			for (uint8_t ind = 0; ind < buff_stop_size; ind++) {
-				if (current_floor == buff_stop_floors[ind]) {
-					setting_symbols_floor(temp_str, current_floor, 'c');
-					TIM4_Diaplay_symbols_on_matrix(DISPLAY_STR_DURING_MS,
-							temp_str);
-					break;
-				}
-			}
-		}
-
-		setting_symbols_floor(temp_str, current_floor, direction);
-		TIM4_Diaplay_symbols_on_matrix(DISPLAY_STR_DURING_MS, temp_str);
-
-		switch (direction) {
-		case '>':
-			current_floor++;
-			break;
-		case '<':
-			current_floor--;
-			break;
-		}
-	}
-
-	setting_symbols_floor(temp_str, finish_floor, 'c');
-	TIM4_Diaplay_symbols_on_matrix(DISPLAY_STR_DURING_MS, temp_str);
-
-}
+//void demo_start_finish_floors_movement(uint8_t start_floor, uint8_t finish_floor,
+//		uint8_t *buff_stop_floors, uint8_t buff_stop_size, char direction) {
+//
+//	char temp_str[3];
+//	uint8_t current_floor = start_floor;
+//
+//	setting_symbols_floor(temp_str, start_floor, 'c');
+//	TIM4_Diaplay_symbols_on_matrix(DISPLAY_STR_DURING_MS, temp_str);
+//
+//	while (abs(current_floor - finish_floor) > 0) {
+//
+//		if (buff_stop_size != 0 && buff_stop_floors != NULL) {
+//			for (uint8_t ind = 0; ind < buff_stop_size; ind++) {
+//				if (current_floor == buff_stop_floors[ind]) {
+//					setting_symbols_floor(temp_str, current_floor, 'c');
+//					TIM4_Diaplay_symbols_on_matrix(DISPLAY_STR_DURING_MS,
+//							temp_str);
+//					break;
+//				}
+//			}
+//		}
+//
+//		setting_symbols_floor(temp_str, current_floor, direction);
+//		TIM4_Diaplay_symbols_on_matrix(DISPLAY_STR_DURING_MS, temp_str);
+//
+//		switch (direction) {
+//		case '>':
+//			current_floor++;
+//			break;
+//		case '<':
+//			current_floor--;
+//			break;
+//		}
+//	}
+//
+//	setting_symbols_floor(temp_str, finish_floor, 'c');
+//	TIM4_Diaplay_symbols_on_matrix(DISPLAY_STR_DURING_MS, temp_str);
+//
+//}
 
 /* USER CODE END 1 */
