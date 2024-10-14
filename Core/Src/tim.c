@@ -27,16 +27,18 @@
 #define TIM2_PERIOD 1000 ///< Period of TIM2.
 #define TIM3_FREQ TIM2_FREQ ///< Frequency of APB1 for TIM3.
 
+#define TIM4_PERIOD TIM2_PERIOD ///< Period of TIM4.
+
 #define TIM4_FREQ TIM2_FREQ ///< Frequency of APB1 for TIM4.
 #define FREQ_FOR_S 1 ///< Frequency of TIM4 for Delay in sec.
 
 #define FREQ_FOR_MS 1000 ///< Frequency of TIM3 for Delay in ms.
 #define FREQ_FOR_US 1000000 ///< Frequency of TIM3 for Delay in us.
 
-//#define PRESCALER_FOR_SEC TIM4_FREQ/FREQ_FOR_S -1  ///< Prescaler for TIM4 for Delay in sec. // 64000-1
-
 #define PRESCALER_FOR_MS TIM2_FREQ/FREQ_FOR_MS -1  ///< Prescaler for TIM3 for Delay in ms. // 64000-1
 #define PRESCALER_FOR_US TIM2_FREQ/FREQ_FOR_US - 1 ///< Prescaler for TIM3 for Delay in us. // 64-1
+
+#define DISPLAY_STR_DURING_MS 2000
 
 /// Flag to control if period of TIM3 is elapsed
 volatile bool is_tim3_period_elapsed = false;
@@ -44,9 +46,8 @@ volatile bool is_tim3_period_elapsed = false;
 /// Flag to control if period of TIM4 is elapsed
 volatile bool is_tim4_period_elapsed = false;
 
-volatile uint32_t tim4_elapsed_ms = 0;         // Счетчик прошедшего времени
-volatile bool action_625_triggered = false;    // Флаг для 625 мс
-volatile bool action_1250_triggered = false;   // Флаг для 1250 мс
+/// TIM4 counter to control elapsed time in ms
+volatile uint32_t tim4_elapsed_ms = 0;
 
 /**
  * @brief  Handle Interrupt by period of TIM3 is elapsed,
@@ -360,75 +361,110 @@ void TIM2_PWM_Frequency(int16_t frequency) {
 	HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 }
 
-uint32_t counter_value = 0;
-uint16_t ms_counter = 0;
+/**
+ * @brief  Setting symbols for current floor.
+ * @param  *str Pointer to the output string with symbols for the floor.
+ * @param  current_floor Number of the current floor.
+ * @param  direction Direction of the movement of lift: '>' - up, '<' - down, 'c' - empty symbol for stop floor.
+ * @retval None
+ */
+void setting_symbols_floor(char *str, uint8_t current_floor, char direction) {
 
-void TIM4_Set_symbol(uint16_t time_ms, char *str_symbols) {
+	str[0] = direction;
+
+	if (current_floor > 0 && current_floor < 10) {
+		str[1] = convert_int_to_char(current_floor % 10);
+		str[2] = 'c';
+	} else {
+		str[1] = convert_int_to_char(current_floor / 10);
+		str[2] = convert_int_to_char(current_floor % 10);
+	}
+}
+
+/**
+ * @brief  Display symbols on matrix.
+ * @param  time_ms The time (ms) during which the symbols will be displayed.
+ * @param  *str_symbols Pointer to the string to be displayed.
+ * @retval None
+ */
+void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols) {
 	is_tim4_period_elapsed = false;
 
-	tim4_elapsed_ms = 0;
-	action_625_triggered = false;
-	action_1250_triggered = false;
-
-	ms_counter = 0;
+	uint16_t tim4_ms_counter = 0;
 
 	__HAL_TIM_SET_PRESCALER(&htim4, PRESCALER_FOR_MS);
-	__HAL_TIM_SET_AUTORELOAD(&htim4, 1000);
+	__HAL_TIM_SET_AUTORELOAD(&htim4, TIM4_PERIOD);
 
-	while (ms_counter < time_ms) {
+	while (tim4_ms_counter < time_ms) {
 		HAL_TIM_Base_Start_IT(&htim4);
 		is_tim4_period_elapsed = false;
 		while (!is_tim4_period_elapsed) {
 
-			if (str_symbols[0] == 'c' && str_symbols[1] == 'c') {
-				set_symbol(str_symbols[2], 5, 0);
-			} else if (str_symbols[0] == 'c') {
-				set_symbol(str_symbols[1], 4, 0);
-				set_symbol(str_symbols[2], 8, 0);
-			} else {
-				set_symbol(str_symbols[0], 1, 0);
-				set_symbol(str_symbols[1], 7, 0);
-
-				switch (ms_counter) {
-				case 0:
-					set_symbol(str_symbols[2], 11, 0);
-					break;
-				case 1000:
-					set_symbol(str_symbols[2], 11, 1);
-					break;
-
-				case 2000:
-					set_symbol(str_symbols[2], 11, 2);
-					break;
-				case 3000:
-					set_symbol(str_symbols[2], 11, 3);
-					break;
-
-				case 4000:
-					set_symbol(str_symbols[2], 11, 4);
-					break;
-				case 5000:
-					set_symbol(str_symbols[2], 11, 5);
-					break;
-
-				case 6000:
-					set_symbol(str_symbols[2], 11, 6);
-					break;
-				case 7000:
-					set_symbol(str_symbols[2], 11, 7);
-					break;
-				case 8000:
-					set_symbol(str_symbols[2], 11, 8);
-					break;
-				}
-
+			// stop floor 1..9: c1c
+			if (str_symbols[0] == 'c' && str_symbols[2] == 'c') {
+				set_symbol_on_matrix(str_symbols[1], 6, 0);
+			} else if (str_symbols[0] == 'c') { // stop floor 10..99: c10
+				set_symbol_on_matrix(str_symbols[1], 4, 0);
+				set_symbol_on_matrix(str_symbols[2], 8, 0);
+			} else { // in moving up/down: >10 or >1c
+				set_symbol_on_matrix(str_symbols[0], 0, 0);
+				set_symbol_on_matrix(str_symbols[1], 6, 0);
+				set_symbol_on_matrix(str_symbols[2], 10, 0);
 			}
 
 		}
 		HAL_TIM_Base_Stop_IT(&htim4);
-		ms_counter += 1000;
+		tim4_ms_counter += TIM4_PERIOD;
 	}
-//	HAL_TIM_Base_Stop_IT(&htim4);
+}
+
+/**
+ * @brief  Movement from start to finish floor with stop floors and direction.
+ * @param  start_floor Start floor.
+ * @param  finish_floor Finish floor.
+ * @param  *buff_stop_floors Pointer to the buffer with stop floors.
+ * @param  buff_stop_size Size of the buff_stop_floors.
+ * @param  direction Direction of the movement: '>' - up, '<' - down, 'c' - empty symbol for stop floor.
+ * @retval None
+ */
+void demo_start_finish_floors_movement(uint8_t start_floor, uint8_t finish_floor,
+		uint8_t *buff_stop_floors, uint8_t buff_stop_size, char direction) {
+
+	char temp_str[3];
+	uint8_t current_floor = start_floor;
+
+	setting_symbols_floor(temp_str, start_floor, 'c');
+	TIM4_Diaplay_symbols_on_matrix(DISPLAY_STR_DURING_MS, temp_str);
+
+	while (abs(current_floor - finish_floor) > 0) {
+
+		if (buff_stop_size != 0 && buff_stop_floors != NULL) {
+			for (uint8_t ind = 0; ind < buff_stop_size; ind++) {
+				if (current_floor == buff_stop_floors[ind]) {
+					setting_symbols_floor(temp_str, current_floor, 'c');
+					TIM4_Diaplay_symbols_on_matrix(DISPLAY_STR_DURING_MS,
+							temp_str);
+					break;
+				}
+			}
+		}
+
+		setting_symbols_floor(temp_str, current_floor, direction);
+		TIM4_Diaplay_symbols_on_matrix(DISPLAY_STR_DURING_MS, temp_str);
+
+		switch (direction) {
+		case '>':
+			current_floor++;
+			break;
+		case '<':
+			current_floor--;
+			break;
+		}
+	}
+
+	setting_symbols_floor(temp_str, finish_floor, 'c');
+	TIM4_Diaplay_symbols_on_matrix(DISPLAY_STR_DURING_MS, temp_str);
+
 }
 
 /* USER CODE END 1 */

@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    tim.h
-  * @brief   This file contains all the function prototypes for
-  *          the tim.c file
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2024 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    tim.h
+ * @brief   This file contains all the function prototypes for
+ *          the tim.c file
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2024 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __TIM_H__
@@ -30,6 +30,8 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 extern TIM_HandleTypeDef htim2;
@@ -71,7 +73,25 @@ void TIM3_Delay_us(uint16_t delay);
  */
 void TIM2_PWM_Frequency(int16_t frequency);
 
-void TIM4_Set_symbol(uint16_t time_ms, char *str_symbols);
+/**
+ * @brief  Display symbols on matrix.
+ * @param  time_ms The time (ms) during which the symbols will be displayed.
+ * @param  *str_symbols Pointer to the string to be displayed.
+ * @retval None
+ */
+void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols);
+
+/**
+ * @brief  Movement from start to finish floor with stop floors and direction.
+ * @param  start_floor Start floor.
+ * @param  finish_floor Finish floor.
+ * @param  *buff_stop_floors Pointer to the buffer with stop floors.
+ * @param  buff_stop_size Size of the buff_stop_floors.
+ * @param  direction Direction of the movement: '>' - up, '<' - down, 'c' - empty symbol for stop floor.
+ * @retval None
+ */
+void demo_start_finish_floors_movement(uint8_t start_floor, uint8_t finish_floor,
+		uint8_t *buff_stop_floors, uint8_t buff_stop_size, char direction);
 
 /* USER CODE END Prototypes */
 
