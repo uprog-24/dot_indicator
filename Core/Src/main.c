@@ -30,6 +30,7 @@
 #include "can.h"
 #include "buzzer.h"
 #include "font.h"
+#include "demo_mode.h"
 
 #include <string.h>
 /* USER CODE END Includes */
@@ -47,7 +48,6 @@
 #define BUZZER_BUFF_SIZE 3
 
 #define DEMO_MODE 1
-#define STOP_FLOORS_BUFF_SIZE 4
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -119,14 +119,9 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 #if DEMO_MODE
 
-	uint8_t buff_stop_floors[STOP_FLOORS_BUFF_SIZE] = { 7, 8, 10, 11 };
-
 	while (1) {
 
-		demo_start_finish_floors_movement(1, 14, buff_stop_floors,
-		STOP_FLOORS_BUFF_SIZE, '>');
-
-		demo_start_finish_floors_movement(14, 1, NULL, 0, '<');
+		demo_mode_start();
 
 		/* USER CODE END WHILE */
 
@@ -134,6 +129,8 @@ int main(void) {
 	}
 #else
 	while (1) {
+
+
 
 	}
 #endif

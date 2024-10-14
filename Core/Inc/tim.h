@@ -81,17 +81,9 @@ void TIM2_PWM_Frequency(int16_t frequency);
  */
 void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols);
 
-/**
- * @brief  Movement from start to finish floor with stop floors and direction.
- * @param  start_floor Start floor.
- * @param  finish_floor Finish floor.
- * @param  *buff_stop_floors Pointer to the buffer with stop floors.
- * @param  buff_stop_size Size of the buff_stop_floors.
- * @param  direction Direction of the movement: '>' - up, '<' - down, 'c' - empty symbol for stop floor.
- * @retval None
- */
-void demo_start_finish_floors_movement(uint8_t start_floor, uint8_t finish_floor,
-		uint8_t *buff_stop_floors, uint8_t buff_stop_size, char direction);
+
+//void demo_start_finish_floors_movement(uint8_t start_floor, uint8_t finish_floor,
+//		uint8_t *buff_stop_floors, uint8_t buff_stop_size, char direction);
 
 /* USER CODE END Prototypes */
 
