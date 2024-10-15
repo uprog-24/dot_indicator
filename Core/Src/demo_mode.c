@@ -17,12 +17,11 @@ static uint8_t buff_stop_floors[STOP_FLOORS_BUFF_SIZE] = { 7, 8, 10, 11 }; ///< 
 #define DISPLAY_STR_DURING_MS 2000 ///< Time during which symbols are displayed on matrix.
 
 /**
- * @brief  Movement from start to finish floor with stop floors and direction.
+ * @brief  Movement from start to finish floor with stop floors.
  * @param  start_floor Start floor.
  * @param  finish_floor Finish floor.
  * @param  *buff_stop_floors Pointer to the buffer with stop floors.
  * @param  buff_stop_size Size of the buff_stop_floors.
- * @param  direction Direction of the movement: '>' - up, '<' - down, 'c' - empty symbol for stop floor.
  * @retval None
  */
 static void demo_start_finish_floors_movement(uint8_t start_floor,

@@ -8,6 +8,10 @@
 
 #include <stdint.h>
 
+/**
+ * @brief  Start lift movement in demo mode.
+ * @retval None
+ */
 void demo_mode_start();
 
 #endif // DEMO_MODE_H
