@@ -238,7 +238,7 @@ void CAN_TxData(uint32_t stdId) {
 
 	if (is_data_received) {
 		is_data_received = false;
-		set_symbols_to_matrix(str_ok);
+		draw_str_on_matrix(str_ok);
 	}
 
 }

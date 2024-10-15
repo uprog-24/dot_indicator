@@ -22,6 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 #include "font.h"
+#include "drawing.h"
 
 #define TIM2_FREQ 64000000 ///< Frequency of APB1 for TIM2.
 #define TIM2_PERIOD 1000 ///< Period of TIM2.
@@ -345,7 +346,7 @@ void TIM3_Delay_us(uint16_t delay) {
  * @param  frequency Number between 1..65535
  * @retval prescaler
  */
-int16_t TIM2_get_prescaler_frequency(int16_t frequency) {
+uint16_t TIM2_get_prescaler_frequency(uint16_t frequency) {
 	if (frequency == 0)
 		return 0;
 	return ((TIM2_FREQ / (TIM2_PERIOD * frequency)) - 1);
@@ -359,26 +360,6 @@ int16_t TIM2_get_prescaler_frequency(int16_t frequency) {
 void TIM2_PWM_Frequency(int16_t frequency) {
 	__HAL_TIM_SET_PRESCALER(&htim2, TIM2_get_prescaler_frequency(frequency));
 	HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
-}
-
-/**
- * @brief  Setting symbols for current floor.
- * @param  *str Pointer to the output string with symbols for the floor.
- * @param  current_floor Number of the current floor.
- * @param  direction Direction of the movement of lift: '>' - up, '<' - down, 'c' - empty symbol for stop floor.
- * @retval None
- */
-void setting_symbols_floor(char *str, uint8_t current_floor, char direction) {
-
-	str[0] = direction;
-
-	if (current_floor > 0 && current_floor < 10) {
-		str[1] = convert_int_to_char(current_floor % 10);
-		str[2] = 'c';
-	} else {
-		str[1] = convert_int_to_char(current_floor / 10);
-		str[2] = convert_int_to_char(current_floor % 10);
-	}
 }
 
 /**
@@ -402,14 +383,14 @@ void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols) {
 
 			// stop floor 1..9: c1c
 			if (str_symbols[0] == 'c' && str_symbols[2] == 'c') {
-				set_symbol_on_matrix(str_symbols[1], 6, 0);
+				draw_symbol_on_matrix(str_symbols[1], 6, 0);
 			} else if (str_symbols[0] == 'c') { // stop floor 10..99: c10
-				set_symbol_on_matrix(str_symbols[1], 4, 0);
-				set_symbol_on_matrix(str_symbols[2], 8, 0);
+				draw_symbol_on_matrix(str_symbols[1], 4, 0);
+				draw_symbol_on_matrix(str_symbols[2], 8, 0);
 			} else { // in moving up/down: >10 or >1c
-				set_symbol_on_matrix(str_symbols[0], 1, 0);
-				set_symbol_on_matrix(str_symbols[1], 7, 0);
-				set_symbol_on_matrix(str_symbols[2], 11, 0);
+				draw_symbol_on_matrix(str_symbols[0], 1, 0);
+				draw_symbol_on_matrix(str_symbols[1], 7, 0);
+				draw_symbol_on_matrix(str_symbols[2], 11, 0);
 			}
 
 		}
