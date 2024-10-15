@@ -14,12 +14,22 @@
  * @brief  Setting symbols for current floor.
  * @param  *str Pointer to the output string with symbols for the floor.
  * @param  current_floor Number of the current floor.
- * @param  direction Direction of the movement of lift: '>' - up, '<' - down, 'c' - empty symbol for stop floor.
+ * @param  direction Direction of the movement of lift: UPWARD, DOWNWARD, STOP.
  * @retval None
  */
-void setting_symbols_floor(char *str, uint8_t current_floor, char direction) {
+void setting_symbols_floor(char *str, uint8_t current_floor,
+		direction_t direction) {
 
-	str[0] = direction;
+	switch (direction) {
+	case UPWARD:
+		str[0] = '>';
+		break;
+	case DOWNWARD:
+		str[0] = '<';
+		break;
+	case STOP:
+		str[0] = 'c';
+	}
 
 	if (current_floor > 0 && current_floor < 10) {
 		str[1] = convert_int_to_char(current_floor % 10);

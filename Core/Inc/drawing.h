@@ -9,13 +9,20 @@
 #include <stdint.h>
 
 /**
+ * Stores direction of movement
+ */
+typedef enum {
+	UPWARD, DOWNWARD, STOP
+} direction_t;
+
+/**
  * @brief  Setting symbols for current floor.
  * @param  *str Pointer to the output string with symbols for the floor.
  * @param  current_floor Number of the current floor.
- * @param  direction Direction of the movement of lift: '>' - up, '<' - down, 'c' - empty symbol for stop floor.
+ * @param  direction Direction of the movement of lift: UPWARD, DOWNWARD, STOP.
  * @retval None
  */
-void setting_symbols_floor(char *str, uint8_t current_floor, char direction);
+void setting_symbols_floor(char *str, uint8_t current_floor, direction_t direction);
 
 /**
  * @brief  Draw a symbol on matrix.
