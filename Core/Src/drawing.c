@@ -29,6 +29,7 @@ void setting_symbols_floor(char *str, uint8_t current_floor,
 		break;
 	case STOP:
 		str[0] = 'c';
+		break;
 	}
 
 	if (current_floor > 0 && current_floor < 10) {
