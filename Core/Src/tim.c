@@ -380,19 +380,7 @@ void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols) {
 		HAL_TIM_Base_Start_IT(&htim4);
 		is_tim4_period_elapsed = false;
 		while (!is_tim4_period_elapsed) {
-
-			// stop floor 1..9: c1c
-			if (str_symbols[0] == 'c' && str_symbols[2] == 'c') {
-				draw_symbol_on_matrix(str_symbols[1], 6, 0);
-			} else if (str_symbols[0] == 'c') { // stop floor 10..99: c10
-				draw_symbol_on_matrix(str_symbols[1], 4, 0);
-				draw_symbol_on_matrix(str_symbols[2], 8, 0);
-			} else { // in moving up/down: >10 or >1c
-				draw_symbol_on_matrix(str_symbols[0], 1, 0);
-				draw_symbol_on_matrix(str_symbols[1], 7, 0);
-				draw_symbol_on_matrix(str_symbols[2], 11, 0);
-			}
-
+			draw_str_on_matrix(str_symbols);
 		}
 		HAL_TIM_Base_Stop_IT(&htim4);
 		tim4_ms_counter += TIM4_PERIOD;
