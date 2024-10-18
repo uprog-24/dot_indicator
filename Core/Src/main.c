@@ -31,6 +31,7 @@
 #include "buzzer.h"
 #include "font.h"
 #include "demo_mode.h"
+#include "drawing.h"
 
 #include <string.h>
 /* USER CODE END Includes */
@@ -47,7 +48,7 @@
 #define MATRIX_OFF "off"
 #define BUZZER_BUFF_SIZE 3
 
-#define DEMO_MODE 1
+#define DEMO_MODE 0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -75,6 +76,9 @@ char rx_data[BUFF_SIZE]; // = { '\0' };
 
 /// Buffer with frequencies for buzzer sound
 uint16_t buzzer_freq_buff[BUZZER_BUFF_SIZE] = { 3000, 4000, 0 };
+
+// Counter to check CAN activity
+uint32_t no_can_counter = 0;
 
 /* USER CODE END 0 */
 
@@ -123,14 +127,23 @@ int main(void) {
 
 		demo_mode_start();
 
-		/* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-		/* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 	}
 #else
+	extern bool is_can_connected;
+
+	CAN_Start(&hcan);
+	TIM4_Start();
+
 	while (1) {
 
+		while (is_can_connected) {
+			CAN_RxData();
+		}
 
+		draw_str_on_matrix("--");
 
 	}
 #endif

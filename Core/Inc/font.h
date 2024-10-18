@@ -13,12 +13,12 @@
 #define BINARY_SYMBOL_SIZE 8 ///< 8 bit massive for binary representation of symbol.
 
 /**
- * @brief  Convert digit representation of symbol to binary.
+ * @brief  Convert Convert decimal number to binary.
  * @param  number
  * @param  *binary_mas Binary representation of the symbol
  * @retval None
  */
-void convert_number_from_dec_to_bin(uint8_t number, uint8_t *binary_mas);
+void convert_number_from_dec_to_bin(uint8_t number, uint8_t *binary_mas, uint8_t bin_size);
 
 /**
  * @brief  Find binary representation of the symbol.

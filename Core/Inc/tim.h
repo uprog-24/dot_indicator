@@ -81,6 +81,7 @@ void TIM2_PWM_Frequency(int16_t frequency);
  */
 void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols);
 
+void TIM4_Start();
 
 /* USER CODE END Prototypes */
 

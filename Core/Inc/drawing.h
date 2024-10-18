@@ -12,7 +12,7 @@
  * Stores direction of movement
  */
 typedef enum {
-	UPWARD, DOWNWARD, STOP
+	UPWARD = 2, DOWNWARD = 1, STOP = 0
 } direction_t;
 
 /**

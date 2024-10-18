@@ -50,6 +50,9 @@ volatile bool is_tim4_period_elapsed = false;
 /// TIM4 counter to control elapsed time in ms
 volatile uint32_t tim4_elapsed_ms = 0;
 
+extern volatile uint32_t alive_cnt[2];
+extern bool is_can_connected;
+
 /**
  * @brief  Handle Interrupt by period of TIM3 is elapsed,
  * setting the state of the flag.
@@ -64,6 +67,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 	if (htim->Instance == TIM4) {
 		is_tim4_period_elapsed = true;
+
+		if (alive_cnt[0] == alive_cnt[1]) {
+			is_can_connected = false;
+		}
+		alive_cnt[1] = alive_cnt[0];
 	}
 
 }
@@ -176,7 +184,7 @@ void MX_TIM4_Init(void) {
 	htim4.Instance = TIM4;
 	htim4.Init.Prescaler = 64000 - 1;
 	htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim4.Init.Period = 100 - 1;
+	htim4.Init.Period = 1 - 1; //3000; //1000-1; //1000 - 1;
 	htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim4) != HAL_OK) {
@@ -373,8 +381,8 @@ void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols) {
 
 	uint16_t tim4_ms_counter = 0;
 
-	__HAL_TIM_SET_PRESCALER(&htim4, PRESCALER_FOR_MS);
-	__HAL_TIM_SET_AUTORELOAD(&htim4, TIM4_PERIOD);
+	__HAL_TIM_SET_PRESCALER(&htim4, PRESCALER_FOR_MS); // 1 ms
+	__HAL_TIM_SET_AUTORELOAD(&htim4, TIM4_PERIOD); // 1 s
 
 	while (tim4_ms_counter < time_ms) {
 		HAL_TIM_Base_Start_IT(&htim4);
@@ -386,5 +394,32 @@ void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols) {
 		tim4_ms_counter += TIM4_PERIOD;
 	}
 }
+
+void TIM4_Start() {
+	__HAL_TIM_SET_PRESCALER(&htim4, PRESCALER_FOR_MS); // 1 ms
+	__HAL_TIM_SET_AUTORELOAD(&htim4, 3000); // 3 s
+	HAL_TIM_Base_Start_IT(&htim4);
+}
+
+
+
+//void TIM4_Check_CAN_connection(uint16_t time_ms) {
+//	is_tim4_period_elapsed = false;
+//
+//	uint16_t tim4_ms_counter = 0;
+//
+//	__HAL_TIM_SET_PRESCALER(&htim4, PRESCALER_FOR_MS); // 1 ms
+//	__HAL_TIM_SET_AUTORELOAD(&htim4, TIM4_PERIOD); // 1 s
+//
+//	while (tim4_ms_counter < time_ms) {
+//		HAL_TIM_Base_Start_IT(&htim4);
+//		is_tim4_period_elapsed = false;
+//		while (!is_tim4_period_elapsed) {
+//			draw_str_on_matrix(str_symbols);
+//		}
+//		HAL_TIM_Base_Stop_IT(&htim4);
+//		tim4_ms_counter += TIM4_PERIOD;
+//	}
+//}
 
 /* USER CODE END 1 */

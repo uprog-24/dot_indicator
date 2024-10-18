@@ -57,6 +57,9 @@ void CAN_Start();
  */
 void CAN_TxData(uint32_t stdId);
 
+
+void CAN_RxData();
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

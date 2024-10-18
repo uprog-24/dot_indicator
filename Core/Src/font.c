@@ -54,22 +54,45 @@ static symbol_t symbols[] = { { 'c', { // clear
 				0b00110000, 0b00000000
 
 		} }, { 'K', { 0b00000000, 0b01001000, 0b01010000, 0b01100000,
-				0b01100000, 0b01010000, 0b01001000, 0b00000000 } }
+				0b01100000, 0b01010000, 0b01001000, 0b00000000 } }, { '-', {
+				0b00000000, 0b00000000, 0b00000000, 0b01110000, 0b00000000,
+				0b00000000, 0b00000000, 0b00000000 } }, { 'b', { 0b01000000,
+				0b01000000, 0b01000000, 0b01110000, 0b01001000, 0b01001000,
+				0b01001000, 0b00110000 } }, { 'L', { 0b01000000, 0b01000000,
+				0b01000000, 0b01000000, 0b01000000, 0b01000000, 0b01001000,
+				0b01111000 } }, { 'A', { 0b00110000, 0b01001000, 0b01001000,
+				0b01111000, 0b01001000, 0b01001000, 0b01001000, 0b01001000 } },
+		{ 'P', { 0b01110000, 0b01001000, 0b01001000, 0b01001000, 0b01110000,
+				0b01000000, 0b01000000, 0b01000000 } }, { 'H', { 0b01001000,
+				0b01001000, 0b01001000, 0b01111000, 0b01001000, 0b01001000,
+				0b01001000, 0b01001000 } }, { 'C', { 0b00110000, 0b01001000,
+				0b01000000, 0b01000000, 0b01000000, 0b01000000, 0b01001000,
+				0b00110000 } }, { 'E', { 0b01111000, 0b01000000, 0b01000000,
+				0b01000000, 0b01111000, 0b01000000, 0b01000000, 0b01111000 } },
+		{ 'F', { 0b01111000, 0b01000000, 0b01000000, 0b01000000, 0b01110000,
+				0b01000000, 0b01000000, 0b01000000 } }, { 'U', { 0b01001000,
+				0b01001000, 0b01001000, 0b01001000, 0b01001000, 0b01001000,
+				0b01001000, 0b00110000 } }, { 'p', // П
+				{ 0b01111000, 0b01001000, 0b01001000, 0b01001000, 0b01001000,
+						0b01001000, 0b01001000, 0b01001000 } }
 
 };
 
 /**
- * @brief  Convert digit representation of symbol to binary.
+ * @brief  Convert decimal number to binary.
  * @param  number
  * @param  *binary_mas Binary representation of the symbol
  * @retval None
  */
-void convert_number_from_dec_to_bin(uint8_t number, uint8_t *binary_mas) {
-	int8_t font_index = START_BIT_INDEX_FONT;
+void convert_number_from_dec_to_bin(uint8_t number, uint8_t *binary_mas,
+		uint8_t bin_size) {
+	int8_t font_index = bin_size;
+	uint8_t bit_num = 0;
 	while (font_index != -1) {
-		binary_mas[font_index] = number % 2;
+		binary_mas[bit_num] = number % 2;
 		number /= 2;
 		font_index--;
+		bit_num++;
 	}
 }
 
@@ -95,6 +118,4 @@ uint8_t* find_binary_representation(char symbol) {
 char convert_int_to_char(uint8_t number) {
 	return number + '0';
 }
-
-
 
