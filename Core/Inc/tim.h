@@ -34,6 +34,8 @@ extern "C" {
 #include <stdlib.h>
 /* USER CODE END Includes */
 
+extern TIM_HandleTypeDef htim1;
+
 extern TIM_HandleTypeDef htim2;
 
 extern TIM_HandleTypeDef htim3;
@@ -44,6 +46,7 @@ extern TIM_HandleTypeDef htim4;
 
 /* USER CODE END Private defines */
 
+void MX_TIM1_Init(void);
 void MX_TIM2_Init(void);
 void MX_TIM3_Init(void);
 void MX_TIM4_Init(void);
@@ -68,10 +71,10 @@ void TIM3_Delay_us(uint16_t delay);
 
 /**
  * @brief  Set frequency for sound of buzzer (turning on).
- * @param  frequency Number between 1..65535
+ * @param  frequency: Number between 1..65535
  * @retval None
  */
-void TIM2_PWM_Frequency(int16_t frequency);
+void TIM2_Start_bip(uint16_t frequency);
 
 /**
  * @brief  Display symbols on matrix.
@@ -81,7 +84,35 @@ void TIM2_PWM_Frequency(int16_t frequency);
  */
 void TIM4_Diaplay_symbols_on_matrix(uint16_t time_ms, char *str_symbols);
 
+/**
+ * @brief  Start TIM1 using CH1 Output Compare mode
+ * to control bip duration in ms.
+ * @retval None
+ */
+void TIM1_Start();
+
+/**
+ * @brief  Start TIM4 to control connection of CAN,
+ * if through 3 sec new data wasn't received, CAN isn't connected.
+ * @retval None
+ */
 void TIM4_Start();
+
+/**
+ * @brief  Start TIM2 for buzzer.
+ * @retval None
+ */
+void TIM2_Start_PWM();
+
+/**
+ * @brief  Set frequency, bip_counter, bip_duration_ms, and start bip sequence.
+ * @param  frequency: Frequency for buzzer sound.
+ * @param  bip_counter: Number of bips.
+ * @param  bip_duration_ms Duration of one bip.
+ * @retval None
+ */
+void TIM2_Set_pwm_sound(uint16_t frequency, uint16_t bip_counter,
+		uint8_t bip_duration_ms);
 
 /* USER CODE END Prototypes */
 

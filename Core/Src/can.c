@@ -25,31 +25,10 @@
 #include "font.h"
 #include "drawing.h"
 #include "tim.h"
-
+#include "buzzer.h"
 #include <stdbool.h>
 #include <stdio.h>
-
-#define CAN_DATA_SIZE 8 ///< Size of data (8 bit).
-
-enum uim6100_packet_bytes {
-	BYTE_CODE_OPERATION_0 = 0,
-	BYTE_CODE_OPERATION_1,
-	BYTE_W_0,
-	BYTE_W_1,
-	BYTE_W_2,
-	BYTE_W_3
-};
-
-enum w_3_bits {
-	INDICATOR_DOWN = 0,
-	INDICATOR_UP = 1,
-	ARRIVAL = 2,
-	MOVING = 4,
-	SPEECH_SUPPORT = 5,
-	NO_RESPONSE = 7
-};
-
-#define ARROW_MASK 0x03;
+#include <uim6100.h>
 
 /// Structure of Header for transmitting data
 static CAN_TxHeaderTypeDef tx_header;
@@ -71,6 +50,7 @@ char *str_ok = "OK";
 
 volatile uint32_t alive_cnt[2] = { 0, };
 
+/// Flag to control if CAN is connected
 volatile bool is_can_connected = false;
 
 /// Flag to control if data is received
@@ -85,9 +65,10 @@ volatile bool is_data_received = false;
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 	if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rx_header, rx_data_can)
 			== HAL_OK) {
-		if (rx_header.StdId == 46 && rx_header.DLC == 6
-				&& rx_data_can[BYTE_CODE_OPERATION_0] == 0x81
-				&& rx_data_can[BYTE_CODE_OPERATION_1] == 0x00) {
+		if (rx_header.StdId == UIM6100_MAIN_CABIN_CAN_ID
+				&& rx_header.DLC == UIM6100_DLC
+				&& rx_data_can[BYTE_CODE_OPERATION_0] == BYTE_CODE_OPERATION_0_VALUE
+				&& rx_data_can[BYTE_CODE_OPERATION_1] == BYTE_CODE_OPERATION_1_VALUE) {
 			alive_cnt[0] = (alive_cnt[0] < UINT32_MAX) ? alive_cnt[0] + 1 : 0;
 			is_data_received = true;
 			is_can_connected = true;
@@ -233,12 +214,6 @@ static void setFrame(uint32_t stdId) {
 	tx_header.DLC = 6;
 	tx_header.TransmitGlobalTime = 0;
 
-//	tx_data_can[0] = ;
-//	tx_data_can[1] = ;
-//	tx_data_can[2] = ;
-//	tx_data_can[3] = ;
-//	tx_data_can[4] = ;
-//	tx_data_can[5] = ;
 }
 
 /**
@@ -272,48 +247,30 @@ void CAN_TxData(uint32_t stdId) {
 
 }
 
+/**
+ * @brief  Receive data by CAN.
+ * If transmitted data by UIM6100 protocol is received then set symbols to matrix, set gong.
+ * @param  stdId Standard ID of frame.
+ * @retval None
+ */
 void CAN_RxData() {
 
-	uint8_t byte_w3_bin[8] = { 0, };
 	char temp_str[3];
 
 	if (is_data_received) {
 		is_data_received = false;
 
-		convert_number_from_dec_to_bin(rx_data_can[BYTE_W_3], byte_w3_bin, 7);
+		uint8_t code_msg = rx_data_can[BYTE_W_1];
+		uint8_t code_floor = rx_data_can[BYTE_W_2];
 
+		process_code_msg(code_msg);
 
-		direction_t direction = rx_data_can[BYTE_W_3] & ARROW_MASK;
-		setting_symbols_floor(temp_str, rx_data_can[BYTE_W_2], direction);
-//	switch (direction) {
-//	case UPWARD:
-//
-//		break;
-//	case DOWNWARD:
-//		str[0] = '<';
-//		break;
-//	case STOP:
-//		str[0] = 'c';
-//		break;
-//	}
+		direction_t direction = get_direction(rx_data_can[BYTE_W_3]);
+		;
 
+		setting_gong(rx_data_can[BYTE_W_3]);
 
-//		if (byte_w3_bin[INDICATOR_DOWN] == 1) {
-//			setting_symbols_floor(temp_str, rx_data_can[BYTE_W_2], DOWNWARD);
-//		} else
-//
-//		if (byte_w3_bin[INDICATOR_UP] == 1 ) {
-//			setting_symbols_floor(temp_str, rx_data_can[BYTE_W_2], UPWARD);
-//		} else
-//
-//		if (byte_w3_bin[INDICATOR_DOWN] == 0
-//				&& byte_w3_bin[INDICATOR_UP] == 0) {
-////		if (bin[ARRIVAL] == 1) { // прибытие
-//			setting_symbols_floor(temp_str, rx_data_can[BYTE_W_2], STOP);
-//
-//		} else {
-////			setting_symbols_floor(temp_str, rx_data_can[BYTE_W_2], STOP);
-//		}
+		setting_symbols_floor(temp_str, code_floor, direction);
 
 		// while new 6 data bytes are not received, draw str
 		while (is_data_received == false && is_can_connected == true) {

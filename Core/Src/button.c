@@ -70,10 +70,10 @@ void press_button() {
 
 		switch (btn_2_counter) {
 		case 1:
-			TIM2_PWM_Frequency(BUZZER_FREQ);
+//			TIM2_PWM_Frequency(BUZZER_FREQ);
 			break;
 		case 2:
-			TIM2_PWM_Frequency(0);
+//			TIM2_PWM_Frequency(0);
 			break;
 		}
 

@@ -4,6 +4,11 @@
 #include "buzzer.h"
 #include "tim.h"
 
+#define BIP_DURATION_MS 200
+uint16_t buzzer_freq[1] = { 3000 };
+
+extern volatile bool is_tim2_period_elapsed;
+extern volatile bool is_buzzer_sound;
 /**
  * @brief  Setting the state of an active buzzer.
  * When state = TURN_ON - buzzer is turning on,
@@ -31,11 +36,26 @@ void set_active_buzzer_state(states_t state) {
  * @param buff_size Size of freq_buff.
  * @retval None
  */
-void set_passive_buzzer_melody(uint16_t *freq_buff, uint8_t buff_size) {
-	for (uint8_t ind_freq = 0; ind_freq < buff_size - 1; ind_freq++) {
-		TIM2_PWM_Frequency(freq_buff[ind_freq]);
-		TIM3_Delay_ms(250);
-	}
+//void set_passive_buzzer_melody(uint16_t *freq_buff, uint8_t buff_size) {
+//	for (uint8_t ind_freq = 0; ind_freq < buff_size - 1; ind_freq++) {
+//		TIM2_PWM_Frequency(freq_buff[ind_freq]);
+//		TIM3_Delay_ms(250);
+//	}
+//
+//	TIM2_PWM_Frequency(freq_buff[buff_size - 1]);
+//}
 
-	TIM2_PWM_Frequency(freq_buff[buff_size - 1]);
+
+/**
+ * @brief  Play gong using timers for start buzzer sound and count duration.
+ * @param  bip_counter: Number of bips.
+ * @param  bip_frequency: Frequency bip.
+ * @retval None
+ */
+void play_gong(uint8_t bip_counter, uint16_t bip_frequency) {
+	TIM2_Start_PWM();
+	TIM1_Start();
+
+	TIM2_Set_pwm_sound(bip_frequency, bip_counter, BIP_DURATION_MS);
+
 }

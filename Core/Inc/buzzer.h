@@ -23,4 +23,12 @@ void set_active_buzzer_state(states_t state);
  */
 void set_passive_buzzer_melody(uint16_t *freq_buff, uint8_t buff_size);
 
+/**
+ * @brief  Play gong using timers for start buzzer sound and count duration.
+ * @param  bip_counter: Number of bips.
+ * @param  bip_frequency: Frequency bip.
+ * @retval None
+ */
+void play_gong(uint8_t bip_counter, uint16_t bip_frequency);
+
 #endif /*__ BUTTON_H__ */

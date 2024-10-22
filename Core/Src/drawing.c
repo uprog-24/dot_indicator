@@ -5,40 +5,13 @@
 #include "dot.h"
 #include "font.h"
 #include "tim.h"
+#include "uim6100.h"
 
 #include <string.h>
 
 #define MAX_CHARS_ON_MATRIX 2U ///< Limit number chars on matrix.
 
-typedef enum CODE_FLOOR {
-	FLOOR_0 = 0,
-	FLOOR_10 = 10,
-	FLOOR_40 = 40,
-	FLOOR_MINUS_1 = 41,
-	FLOOR_MINUS_9 = 49,
-	RESERVE = 50,
-	SEISMIC_DANGER = 51,
-	LIFT_NOT_WORK = 52,
-	TRANSFER_FIREFIGHTERS = 53,
-	CODE_FLOOR_54 = 54,
-	SERVICE = 55,
-	EVACUATION = 56,
-	FIRE_DANGER = 57,
-	FAULT_IBP = 58,
-	LOADING = 59
-} code_floor_t;
-
-typedef struct {
-	code_floor_t code_floor;
-	char symbol;
-} code_floor_symbol_t;
-
-#define CODE_FLOOR_SYMBOLS_SIZE 10
-
-code_floor_symbol_t code_floor_symbols[] = { { RESERVE, 'b' }, { SEISMIC_DANGER,
-		'L' }, { LIFT_NOT_WORK, 'A' }, { TRANSFER_FIREFIGHTERS, 'P' }, {
-		CODE_FLOOR_54, 'H' }, { SERVICE, 'C' }, { EVACUATION, 'E' }, {
-		FIRE_DANGER, 'F' }, { FAULT_IBP, 'U' }, { LOADING, 'p' } };
+//extern code_floor_symbol_t code_floor_symbols[];
 
 /**
  * @brief  Setting symbols for current floor.
@@ -76,7 +49,7 @@ void setting_symbols_floor(char *str, uint8_t current_floor,
 	} else {
 
 		// special symbols
-		for (uint8_t ind = 0; ind < CODE_FLOOR_SYMBOLS_SIZE; ind++) {
+		for (uint8_t ind = 0; ind < CODE_FLOOR_SYMBOLS_NUMBER; ind++) {
 			if (code_floor_symbols[ind].code_floor == current_floor) {
 				str[1] = code_floor_symbols[ind].symbol;
 				str[2] = 'c';
@@ -131,7 +104,7 @@ void draw_symbol_on_matrix(char symbol, uint8_t pos, uint8_t shift) {
 			}
 			num_bit--;
 		}
-		TIM3_Delay_us(600);
+		TIM3_Delay_us(500);
 		set_all_cols_state(TURN_OFF);
 	}
 
