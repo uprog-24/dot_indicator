@@ -25,7 +25,7 @@
 #include "drawing.h"
 
 #define TIM2_FREQ 64000000 ///< Frequency of APB1 for TIM2.
-#define TIM2_PERIOD 1000 ///< Period of TIM2.
+#define TIM2_PERIOD 1200 ///< Period of TIM2.
 #define TIM3_FREQ TIM2_FREQ ///< Frequency of APB1 for TIM3.
 
 #define TIM4_PERIOD TIM2_PERIOD ///< Period of TIM4.
@@ -40,10 +40,6 @@
 #define PRESCALER_FOR_US TIM2_FREQ/FREQ_FOR_US - 1 ///< Prescaler for TIM3 for Delay in us. // 64-1
 
 #define DISPLAY_STR_DURING_MS 2000
-
-#define BIP_1_DURATION_MS 200
-#define BIP_2_DURATION_MS 2*BIP_1_DURATION_MS
-#define BIP_3_DURATION_MS 3*BIP_1_DURATION_MS
 
 /// Flag to control if period of TIM2 is elapsed
 volatile bool is_tim2_period_elapsed = false;
@@ -86,13 +82,20 @@ uint16_t TIM2_get_prescaler_frequency(uint16_t frequency) {
  * @retval None
  */
 void TIM2_Start_bip(uint16_t frequency) {
+
 	uint16_t prescaler = TIM2_get_prescaler_frequency(frequency);
 	__HAL_TIM_SET_PRESCALER(&htim2, prescaler);
+
+//	TIM2->ARR = (1000000UL / frequency) - 1; // Set The PWM Frequency
+//	    TIM2->CCR2 = (TIM2->ARR >> 1);
+
 }
 
 void TIM2_Stop_bip() {
 	uint16_t prescaler = 0;
 	__HAL_TIM_SET_PRESCALER(&htim2, prescaler);
+
+//	TIM2->CCR2 = 0;
 }
 
 void TIM1_Stop() {
@@ -140,19 +143,23 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
 			if (_bip_counter == 1) {
 				TIM1_Stop();
+//				TIM2_Stop_PWM();
 			}
 
 		}
+
 		if (tim1_elapsed_ms == 2 * _bip_duration_ms) { // start bip 2
 			TIM2_Start_bip(_bip_freq);
 
 		}
+
 		if (tim1_elapsed_ms == 3 * _bip_duration_ms) { // stop bip 2
 
 			TIM2_Stop_bip();
 
 			if (_bip_counter == 2) {
 				TIM1_Stop();
+//				TIM2_Stop_PWM();
 			}
 		}
 
@@ -166,6 +173,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
 			if (_bip_counter == 3) {
 				TIM1_Stop();
+//				TIM2_Stop_PWM();
 			}
 
 		}
@@ -258,11 +266,11 @@ void MX_TIM2_Init(void) {
 
 	/* USER CODE END TIM2_Init 1 */
 	htim2.Instance = TIM2;
-	htim2.Init.Prescaler = 0;
+	htim2.Init.Prescaler = 63;
 	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
 	htim2.Init.Period = 1000;
 	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
 	if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
 		Error_Handler();
 	}
@@ -280,7 +288,7 @@ void MX_TIM2_Init(void) {
 		Error_Handler();
 	}
 	sConfigOC.OCMode = TIM_OCMODE_PWM1;
-	sConfigOC.Pulse = 700;
+	sConfigOC.Pulse = 200;
 	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2)
@@ -541,6 +549,10 @@ void TIM3_Delay_us(uint16_t delay) {
  */
 void TIM2_Start_PWM() {
 	HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
+}
+
+void TIM2_Stop_PWM() {
+	HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2);
 }
 
 /**

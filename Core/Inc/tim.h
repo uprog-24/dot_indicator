@@ -77,6 +77,12 @@ void TIM3_Delay_us(uint16_t delay);
 void TIM2_Start_bip(uint16_t frequency);
 
 /**
+ * @brief  Turn off the sound of buzzer.
+ * @retval None
+ */
+void TIM2_Stop_bip();
+
+/**
  * @brief  Display symbols on matrix.
  * @param  time_ms The time (ms) during which the symbols will be displayed.
  * @param  *str_symbols Pointer to the string to be displayed.

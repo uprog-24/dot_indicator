@@ -4,6 +4,7 @@
 #include <uim6100.h>
 #include "buzzer.h"
 #include "drawing.h"
+#include "tim.h"
 
 #include <stdbool.h>
 
@@ -15,10 +16,10 @@
 #define ARRIVAL_VALUE 4 ///< Bit value of arrival (bits: 100).
 
 #define BUZZER_FREQ 3000 ///< Frequency of bip for start UPWARD, DOWNWARD and ARRIVAL.
-#define BUZZER_FREQ_CABIN_OVERLOAD 6000 ///< Frequency of bip for VOICE_CABIN_OVERLOAD.
+#define BUZZER_FREQ_CABIN_OVERLOAD 5000 ///< Frequency of bip for VOICE_CABIN_OVERLOAD.
 
 /** Stores previous and current state of bit to control buzzer. */
-uint8_t gong[2] = { 0, };
+static uint8_t gong[2] = { 0, };
 
 code_floor_symbol_t code_floor_symbols[] = { { RESERVE, 'b' }, { SEISMIC_DANGER,
 		'L' }, { LIFT_NOT_WORK, 'A' }, { TRANSFER_FIREFIGHTERS, 'P' }, {
@@ -37,11 +38,25 @@ uint8_t get_direction(uint8_t direction_byte_w_3) {
 
 volatile bool is_cabin_overload = false;
 void process_code_msg(uint8_t code_msg_byte_w_1) {
+//	if (code_msg_byte_w_1 == VOICE_CABIN_OVERLOAD) {
+//		TIM2_Start_bip(BUZZER_FREQ_CABIN_OVERLOAD);
+//	} else {
+//		TIM2_Stop_bip();
+//	}
+	static uint32_t last_bip_time = 0;
+
 	if (code_msg_byte_w_1 == VOICE_CABIN_OVERLOAD) {
-//		play_gong(1, BUZZER_FREQ_CABIN_OVERLOAD);
-		TIM2_Start_bip(BUZZER_FREQ_CABIN_OVERLOAD);
 		is_cabin_overload = true;
-	} else {
+		uint32_t current_time = HAL_GetTick();
+
+//	        if (current_time - last_bip_time >= 200) {
+//	        TIM2_Stop_bip();
+		TIM2_Start_bip(BUZZER_FREQ_CABIN_OVERLOAD);
+//	            last_bip_time = current_time;
+//	        }
+	} else
+
+	if (is_cabin_overload) {
 		TIM2_Stop_bip();
 		is_cabin_overload = false;
 	}
@@ -53,23 +68,21 @@ void process_code_msg(uint8_t code_msg_byte_w_1) {
  * @retval None
  */
 void setting_gong(uint8_t direction_byte_w_3) {
-	direction_t direction = direction_byte_w_3 & ARROW_MASK
-	;
+	direction_t direction = direction_byte_w_3 & ARROW_MASK;
 
-	uint8_t arrival = direction_byte_w_3 & ARRIVAL_MASK
-	;
+	uint8_t arrival = direction_byte_w_3 & ARRIVAL_MASK;
 
-	switch (direction) {
-	case UPWARD:
-		gong[0] = (direction == UPWARD_VALUE) != 0 ? 1 : 0;
-		break;
-	case DOWNWARD:
-		gong[0] = (direction == DOWNWARD_VALUE) != 0 ? 1 : 0;
-		break;
-	case STOP:
-		gong[0] = (arrival == ARRIVAL_VALUE) != 0 ? 1 : 0;
-		break;
-	}
+//	switch (direction) {
+//	case UPWARD:
+//		gong[0] = (direction == UPWARD_VALUE) != 0 ? 1 : 0;
+//		break;
+//	case DOWNWARD:
+//		gong[0] = (direction == DOWNWARD_VALUE) != 0 ? 1 : 0;
+//		break;
+//	case STOP:
+	gong[0] = (arrival == ARRIVAL_VALUE) != 0 ? 1 : 0;
+//		break;
+//	}
 
 	if (gong[0] && !gong[1]) {
 
