@@ -9,9 +9,10 @@
 #include <stdint.h>
 
 #define UIM6100_DLC 6 ///< Length of data (6 bit).
-#define UIM6100_MAIN_CABIN_CAN_ID 46 ///< ID of the main cabin
-#define BYTE_CODE_OPERATION_0_VALUE 0x81 ///< Value of BYTE_CODE_OPERATION_0 byte
-#define BYTE_CODE_OPERATION_1_VALUE 0x00 ///< Value of BYTE_CODE_OPERATION_1 byte
+#define UIM6100_MAIN_CABIN_CAN_ID 46 ///< ID of the main cabin.
+#define BYTE_CODE_OPERATION_0_VALUE 0x81 ///< Value of BYTE_CODE_OPERATION_0 byte.
+#define BYTE_CODE_OPERATION_1_VALUE 0x00 ///< Value of BYTE_CODE_OPERATION_1 byte.
+#define CODE_FLOOR_SPECIAL_SYMBOLS_NUMBER 10 ///< Number of special symbols for code_floor.
 
 /**
  * Stores indexes of bytes of UIM6100 protocol.
@@ -25,6 +26,9 @@ enum uim6100_packet_bytes {
 	BYTE_W_3
 };
 
+/**
+ * Stores values of byte W1 (code message), without floors.
+ */
 typedef enum CODE_MSG {
 	VOICE_LIFT_IS_NOT_WORK = 55,
 	VOICE_FIRE_DANGER = 56,
@@ -37,6 +41,9 @@ typedef enum CODE_MSG {
 	MUTE_SOUND = 63
 } code_msg_t;
 
+/**
+ * Stores values of byte W2 (code floor).
+ */
 typedef enum CODE_FLOOR {
 	FLOOR_0 = 0,
 	FLOOR_10 = 10,
@@ -55,21 +62,30 @@ typedef enum CODE_FLOOR {
 	LOADING = 59
 } code_floor_t;
 
+/**
+ * Stores the parameters of code_floor and it's symbol.
+ */
 typedef struct {
 	code_floor_t code_floor;
 	char symbol;
 } code_floor_symbol_t;
 
-#define CODE_FLOOR_SYMBOLS_NUMBER 10
+/// Buffer for code_floor and it's symbol.
 extern code_floor_symbol_t code_floor_symbols[];
+
 /**
  * @brief  Get value of direction from byte W3.
  * @param  direction_byte_w_3: Byte W3.
- * @retval Value of direction: 0 (bits: 00) - STOP,
- * 1 (bits: 01) - DOWNWARD, 2 (bits: 10) - UPWARD
+ * @retval Value of direction: 0 (bits: 00) - stop,
+ * 1 (bits: 01) - down, 2 (bits: 10) - up
  */
 uint8_t get_direction(uint8_t direction_byte_w_3);
 
+/**
+ * @brief  Process code message from byte W1.
+ * @param  code_msg_byte_w_1: Byte W1.
+ * @retval None
+ */
 void process_code_msg(uint8_t code_msg_byte_w_1);
 
 /**

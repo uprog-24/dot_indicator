@@ -82,22 +82,24 @@ uint16_t TIM2_get_prescaler_frequency(uint16_t frequency) {
  * @retval None
  */
 void TIM2_Start_bip(uint16_t frequency) {
-
 	uint16_t prescaler = TIM2_get_prescaler_frequency(frequency);
 	__HAL_TIM_SET_PRESCALER(&htim2, prescaler);
-
-//	TIM2->ARR = (1000000UL / frequency) - 1; // Set The PWM Frequency
-//	    TIM2->CCR2 = (TIM2->ARR >> 1);
-
 }
 
+/**
+ * @brief  Turn off the sound of buzzer.
+ * Stop bip using prescaler of TIM2.
+ * @retval None
+ */
 void TIM2_Stop_bip() {
 	uint16_t prescaler = 0;
 	__HAL_TIM_SET_PRESCALER(&htim2, prescaler);
-
-//	TIM2->CCR2 = 0;
 }
 
+/**
+ * @brief  Stop TIM1, stop  count duration for bips.
+ * @retval None
+ */
 void TIM1_Stop() {
 	tim1_elapsed_ms = 0;
 	HAL_TIM_Base_Stop_IT(&htim1);
@@ -143,7 +145,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
 			if (_bip_counter == 1) {
 				TIM1_Stop();
-//				TIM2_Stop_PWM();
+				TIM2_Stop_PWM();
 			}
 
 		}
@@ -159,7 +161,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
 			if (_bip_counter == 2) {
 				TIM1_Stop();
-//				TIM2_Stop_PWM();
+				TIM2_Stop_PWM();
 			}
 		}
 
@@ -173,7 +175,7 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 
 			if (_bip_counter == 3) {
 				TIM1_Stop();
-//				TIM2_Stop_PWM();
+				TIM2_Stop_PWM();
 			}
 
 		}
@@ -551,6 +553,10 @@ void TIM2_Start_PWM() {
 	HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 }
 
+/**
+ * @brief  Stop TIM2 for buzzer.
+ * @retval None
+ */
 void TIM2_Stop_PWM() {
 	HAL_TIM_PWM_Stop_IT(&htim2, TIM_CHANNEL_2);
 }

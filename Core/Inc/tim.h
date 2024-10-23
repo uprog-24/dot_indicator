@@ -78,6 +78,7 @@ void TIM2_Start_bip(uint16_t frequency);
 
 /**
  * @brief  Turn off the sound of buzzer.
+ * Stop bip using prescaler of TIM2.
  * @retval None
  */
 void TIM2_Stop_bip();

@@ -18,7 +18,10 @@
 #define BUZZER_FREQ 3000 ///< Frequency of bip for start UPWARD, DOWNWARD and ARRIVAL.
 #define BUZZER_FREQ_CABIN_OVERLOAD 5000 ///< Frequency of bip for VOICE_CABIN_OVERLOAD.
 
-/** Stores previous and current state of bit to control buzzer. */
+/// Flag to control is cabin is overloaded.
+volatile bool is_cabin_overload = false;
+
+/// Stores previous and current state of bit to control buzzer (front 0 to 1).
 static uint8_t gong[2] = { 0, };
 
 code_floor_symbol_t code_floor_symbols[] = { { RESERVE, 'b' }, { SEISMIC_DANGER,
@@ -29,34 +32,26 @@ code_floor_symbol_t code_floor_symbols[] = { { RESERVE, 'b' }, { SEISMIC_DANGER,
 /**
  * @brief  Get value of direction from byte W3.
  * @param  direction_byte_w_3: Byte W3.
- * @retval Value of direction: 0 (bits: 00) - STOP,
- * 1 (bits: 01) - DOWNWARD, 2 (bits: 10) - UPWARD
+ * @retval Value of direction: 0 (bits: 00) - stop,
+ * 1 (bits: 01) - down, 2 (bits: 10) - up
  */
 uint8_t get_direction(uint8_t direction_byte_w_3) {
 	return direction_byte_w_3 & ARROW_MASK;
 }
 
-volatile bool is_cabin_overload = false;
-void process_code_msg(uint8_t code_msg_byte_w_1) {
-//	if (code_msg_byte_w_1 == VOICE_CABIN_OVERLOAD) {
-//		TIM2_Start_bip(BUZZER_FREQ_CABIN_OVERLOAD);
-//	} else {
-//		TIM2_Stop_bip();
-//	}
-	static uint32_t last_bip_time = 0;
 
+/**
+ * @brief  Process code message from byte W1.
+ * @param  code_msg_byte_w_1: Byte W1.
+ * @retval None
+ */
+void process_code_msg(uint8_t code_msg_byte_w_1) {
 	if (code_msg_byte_w_1 == VOICE_CABIN_OVERLOAD) {
 		is_cabin_overload = true;
-		uint32_t current_time = HAL_GetTick();
-
-//	        if (current_time - last_bip_time >= 200) {
-//	        TIM2_Stop_bip();
 		TIM2_Start_bip(BUZZER_FREQ_CABIN_OVERLOAD);
-//	            last_bip_time = current_time;
-//	        }
-	} else
-
-	if (is_cabin_overload) {
+	}
+	// next received bytes by CAN
+	else if (is_cabin_overload) {
 		TIM2_Stop_bip();
 		is_cabin_overload = false;
 	}
@@ -72,17 +67,7 @@ void setting_gong(uint8_t direction_byte_w_3) {
 
 	uint8_t arrival = direction_byte_w_3 & ARRIVAL_MASK;
 
-//	switch (direction) {
-//	case UPWARD:
-//		gong[0] = (direction == UPWARD_VALUE) != 0 ? 1 : 0;
-//		break;
-//	case DOWNWARD:
-//		gong[0] = (direction == DOWNWARD_VALUE) != 0 ? 1 : 0;
-//		break;
-//	case STOP:
 	gong[0] = (arrival == ARRIVAL_VALUE) != 0 ? 1 : 0;
-//		break;
-//	}
 
 	if (gong[0] && !gong[1]) {
 

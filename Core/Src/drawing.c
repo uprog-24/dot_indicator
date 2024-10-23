@@ -11,8 +11,6 @@
 
 #define MAX_CHARS_ON_MATRIX 2U ///< Limit number chars on matrix.
 
-//extern code_floor_symbol_t code_floor_symbols[];
-
 /**
  * @brief  Setting symbols for current floor.
  * @param  *str Pointer to the output string with symbols for the floor.
@@ -49,7 +47,7 @@ void setting_symbols_floor(char *str, uint8_t current_floor,
 	} else {
 
 		// special symbols
-		for (uint8_t ind = 0; ind < CODE_FLOOR_SYMBOLS_NUMBER; ind++) {
+		for (uint8_t ind = 0; ind < CODE_FLOOR_SPECIAL_SYMBOLS_NUMBER; ind++) {
 			if (code_floor_symbols[ind].code_floor == current_floor) {
 				str[1] = code_floor_symbols[ind].symbol;
 				str[2] = 'c';
