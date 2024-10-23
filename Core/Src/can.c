@@ -48,6 +48,7 @@ static uint32_t tx_mailbox = 0;
 /// String OK
 char *str_ok = "OK";
 
+/// Counter to control CAN connection.
 volatile uint32_t alive_cnt[2] = { 0, };
 
 /// Flag to control if CAN is connected

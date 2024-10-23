@@ -39,7 +39,7 @@
 #define PRESCALER_FOR_MS TIM2_FREQ/FREQ_FOR_MS -1  ///< Prescaler for TIM3 for Delay in ms. // 64000-1
 #define PRESCALER_FOR_US TIM2_FREQ/FREQ_FOR_US - 1 ///< Prescaler for TIM3 for Delay in us. // 64-1
 
-#define DISPLAY_STR_DURING_MS 2000
+#define DISPLAY_STR_DURING_MS 2000 ///< Time in ms to display string on matrix.
 
 /// Flag to control if period of TIM2 is elapsed
 volatile bool is_tim2_period_elapsed = false;
@@ -59,10 +59,14 @@ volatile uint32_t tim1_elapsed_ms = 0;
 extern volatile uint32_t alive_cnt[2];
 extern bool is_can_connected;
 
-//volatile bool is_buzzer_sound = false;
-volatile uint16_t _bip_freq = 0;
-volatile uint8_t _bip_counter = 0;
-volatile uint8_t _bip_duration_ms = 0;
+/// Value of bip frequency for HAL_TIM_OC_DelayElapsedCallback.
+static uint16_t _bip_freq = 0;
+
+/// Value of bip counter for HAL_TIM_OC_DelayElapsedCallback.
+static uint8_t _bip_counter = 0;
+
+/// Value of bip duration for HAL_TIM_OC_DelayElapsedCallback.
+static uint8_t _bip_duration_ms = 0;
 
 /**
  * @brief  Get prescaler for TIM2 (PWM) by current frequency.
@@ -134,6 +138,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 }
 
+/**
+ * @brief  Output Compare callback, control duration of bips.
+ * @param  *htim: Structure of TIM
+ * @retval None
+ */
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (htim->Instance == TIM1) {
 
